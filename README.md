@@ -1,7 +1,13 @@
 ### What is this?
-This is a programming exercise exploring Redis and concurrency in Python. 
+This is a programming exercise exploring Redis and concurrency + parallelism
+in Python.
 
 ##### Why?
+I was bored and wanted to learn more about Redis.
+
+
+
+##### How does it work?
 
 ### Installation
 
@@ -28,11 +34,28 @@ Create a configuration file:
 * ```cp config.json.example config.json```
 
 Add settings to `config.json`
-* the redis `host` key expects an IP address of the redis host. Use `127.0.0.1`
+* the redis `host` value expects an IP address of the redis host. Use `127.0.0.1`
 if installed locally
-* `root_url`: a starting url where the crawler begins
+* `root_url`: the crawler's starting url. Example: "https://cs.purdue.edu"
 
 ### Usage
+You'll need to activate the virtual environment and configure the settings
+file before running the crawler.
+
+##### Running the crawler
+The script creates two `MyThreadCrawler` objects and runs them to completion.
+To run processes instead of threads, comment out the `MyThreadCrawler`s and
+instantiate `MyProcessCrawler` objects. Command line arguments were too
+ambitious for this project :)
+
+Run the code with:
+* ```python3 ./crawler.py```
+
+##### Inspecting Redis
+Open the Redis command line utility & connect to the database:
+* ```redis-cli``
+* ```select <database_number>```, where database_number is the `db` value inside `config.json`
+* <more to come>
 
 ### Observations
 
