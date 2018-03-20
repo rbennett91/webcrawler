@@ -1,0 +1,10 @@
+{
+    "redis": {
+        "host": "",
+        "port": 6379,
+        "db": 1,
+        "decode_responses": true
+    },
+    "root_url": "",
+    "max_urls": 500 
+}
