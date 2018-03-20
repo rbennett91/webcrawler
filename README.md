@@ -33,7 +33,7 @@ Install packages from pip:
 Create a configuration file:
 * ```cp config.json.example config.json```
 
-Add settings to `config.json`
+Add settings to `config.json`:
 * the redis `host` value expects an IP address of the redis host. Use `127.0.0.1`
 if installed locally
 * `root_url`: the crawler's starting url. Example: "https://cs.purdue.edu"
@@ -53,8 +53,8 @@ Run the code with:
 
 ##### Inspecting Redis
 Open the Redis command line utility & connect to the database:
-* ```redis-cli``
-* ```select <database_number>```, where database_number is the `db` value inside `config.json`
+* ```redis-cli```
+* ```select <database_number>```, where <database_number> is the `db` value inside `config.json`
 * <more to come>
 
 ### Observations
