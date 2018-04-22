@@ -62,9 +62,14 @@ Open the Redis command line utility & connect to the database:
 ### References
 Here are some of the more useful & interesting references I used while exploring:
 
-Documentation on Redis sorted sets:
+Redis Documentation:
+* https://redis.io/topics/data-types-intro
 * https://redis.io/topics/data-types#sorted-sets
+* https://redis.io/topics/data-types#sets
+* https://redis.io/topics/data-types#lists
 * https://redis.io/commands#sorted_set
+* https://redis.io/commands#set
+* https://redis.io/commands#list
 
 Miscellaneous books & talks:
 * Raymond Hettinger talk on concurrency: https://www.youtube.com/watch?v=9zinZmE3Ogk
