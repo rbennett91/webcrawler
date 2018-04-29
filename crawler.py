@@ -160,8 +160,7 @@ class Crawler2(BaseCrawler):
         self.redis_connection.sadd('url_set', base_url)
 
         for url in new_urls:
-            if not self.redis_connection.sismember('url_set', url):
-                self.redis_connection.sadd('url_set', url)
+            if self.redis_connection.sadd('url_set', url):
                 self.redis_connection.lpush('url_queue_list', url)
 
 
@@ -327,11 +326,11 @@ def main():
     redis_connection = get_redis_connection(config)
     initialize_redis_db(redis_connection, config['root_url'])
 
-    run_thread_crawler1(config, redis_connection)
+    #  run_thread_crawler1(config, redis_connection)
     #  run_process_crawler1(config, redis_connection)
 
     #  run_thread_crawler2(config, redis_connection)
-    #  run_process_crawler2(config, redis_connection)
+    run_process_crawler2(config, redis_connection)
 
 
 if __name__ == '__main__':
