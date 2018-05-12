@@ -1,3 +1,4 @@
+import argparse
 import json
 import multiprocessing
 import threading
@@ -11,6 +12,38 @@ from crawlers import (
     MyProcessCrawler1,
     MyProcessCrawler2,
 )
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c",
+        "--crawler-type",
+        help="Choose a crawler type: <crawler1|crawler2>",
+        default="crawler1"
+    )
+    parser.add_argument(
+        "-w",
+        "--worker-type",
+        help="Choose a worker type: <thread|process>",
+        default="thread"
+    )
+    parser.add_argument(
+        "-n",
+        "--num_workers",
+        help="How many workers? <1|2|3|...>",
+        type=int,
+        default=1
+    )
+    args = parser.parse_args()
+
+    if args.crawler_type not in ('crawler1', 'crawler2'):
+        raise argparse.ArgumentTypeError("Unknown crawler type. Exiting.")
+
+    if args.worker_type not in ('thread', 'process'):
+        raise argparse.ArgumentTypeError("Unknown worker type. Exiting.")
+
+    return args
 
 
 def load_config():
@@ -28,6 +61,7 @@ def get_redis_connection(config):
 
 
 def initialize_redis_db(redis_connection, root_url):
+    # clear redis database
     redis_connection.flushdb()
 
     # create sorted set and counter for Crawler1 objects
@@ -39,132 +73,48 @@ def initialize_redis_db(redis_connection, root_url):
     redis_connection.lpush('c2_url_queue_list', root_url)
 
 
-def run_thread_crawler1(config, redis_connection):
-    url_position_lock = threading.Semaphore(value=1)
-    url_insertion_lock = threading.Semaphore(value=1)
+def crawl(args, config, redis_connection):
+    if args.crawler_type == 'crawler1':
+        if args.worker_type == 'thread':
+            Crawler = MyThreadCrawler1
+            url_position_lock = threading.Semaphore(value=1)
+            url_insertion_lock = threading.Semaphore(value=1)
+        elif args.worker_type == 'process':
+            Crawler = MyProcessCrawler1
+            url_position_lock = multiprocessing.Semaphore(value=1)
+            url_insertion_lock = multiprocessing.Semaphore(value=1)
 
-    kwargs = {
-        'redis_connection': redis_connection,
-        'min_urls': config['min_urls'],
-        'url_position_lock': url_position_lock,
-        'url_insertion_lock': url_insertion_lock,
-    }
+        kwargs = {
+            'url_position_lock': url_position_lock,
+            'url_insertion_lock': url_insertion_lock,
+        }
 
-    worker1 = MyThreadCrawler1(kwargs=kwargs)
-    worker2 = MyThreadCrawler1(kwargs=kwargs)
-    worker3 = MyThreadCrawler1(kwargs=kwargs)
-    worker4 = MyThreadCrawler1(kwargs=kwargs)
+    elif args.crawler_type == 'crawler2':
+        if args.worker_type == 'thread':
+            Crawler = MyThreadCrawler2
+        elif args.worker_type == 'process':
+            Crawler = MyProcessCrawler2
 
-    print("starting to scrape...")
-    t0 = time.time()
+        kwargs = {}
 
-    worker1.start()
-    worker2.start()
-    worker3.start()
-    worker4.start()
-
-    worker1.join()
-    worker2.join()
-    worker3.join()
-    worker4.join()
-
-    t1 = time.time()
-    print("finished scraping...")
-    elapsed_time = round(t1 - t0, 2)
-    print("elapsed scraping time: {} seconds".format(elapsed_time))
-    print('-------------------------')
-
-
-def run_process_crawler1(config, redis_connection):
-    url_position_lock = multiprocessing.Semaphore(value=1)
-    url_insertion_lock = multiprocessing.Semaphore(value=1)
-
-    kwargs = {
-        'redis_connection': redis_connection,
-        'min_urls': config['min_urls'],
-        'url_position_lock': url_position_lock,
-        'url_insertion_lock': url_insertion_lock,
-    }
-
-    worker1 = MyProcessCrawler1(kwargs=kwargs)
-    worker2 = MyProcessCrawler1(kwargs=kwargs)
-    worker3 = MyProcessCrawler1(kwargs=kwargs)
-    worker4 = MyProcessCrawler1(kwargs=kwargs)
+    kwargs.update(
+        {
+            'redis_connection': redis_connection,
+            'min_urls': config['min_urls'],
+        }
+    )
 
     print("starting to scrape...")
     t0 = time.time()
 
-    worker1.start()
-    worker2.start()
-    worker3.start()
-    worker4.start()
+    workers = []
+    for worker in range(args.num_workers):
+        w = Crawler(kwargs=kwargs)
+        workers.append(w)
+        w.start()
 
-    worker1.join()
-    worker2.join()
-    worker3.join()
-    worker4.join()
-
-    t1 = time.time()
-    print("finished scraping...")
-    elapsed_time = round(t1 - t0, 2)
-    print("elapsed scraping time: {} seconds".format(elapsed_time))
-    print('-------------------------')
-
-
-def run_thread_crawler2(config, redis_connection):
-    kwargs = {
-        'redis_connection': redis_connection,
-        'min_urls': config['min_urls'],
-    }
-
-    worker1 = MyThreadCrawler2(kwargs=kwargs)
-    worker2 = MyThreadCrawler2(kwargs=kwargs)
-    worker3 = MyThreadCrawler2(kwargs=kwargs)
-    worker4 = MyThreadCrawler2(kwargs=kwargs)
-
-    print("starting to scrape...")
-    t0 = time.time()
-
-    worker1.start()
-    worker2.start()
-    worker3.start()
-    worker4.start()
-
-    worker1.join()
-    worker2.join()
-    worker3.join()
-    worker4.join()
-
-    t1 = time.time()
-    print("finished scraping...")
-    elapsed_time = round(t1 - t0, 2)
-    print("elapsed scraping time: {} seconds".format(elapsed_time))
-    print('-------------------------')
-
-
-def run_process_crawler2(config, redis_connection):
-    kwargs = {
-        'redis_connection': redis_connection,
-        'min_urls': config['min_urls'],
-    }
-
-    worker1 = MyProcessCrawler2(kwargs=kwargs)
-    worker2 = MyProcessCrawler2(kwargs=kwargs)
-    worker3 = MyProcessCrawler2(kwargs=kwargs)
-    worker4 = MyProcessCrawler2(kwargs=kwargs)
-
-    print("starting to scrape...")
-    t0 = time.time()
-
-    worker1.start()
-    worker2.start()
-    worker3.start()
-    worker4.start()
-
-    worker1.join()
-    worker2.join()
-    worker3.join()
-    worker4.join()
+    for worker in workers:
+        w.join()
 
     t1 = time.time()
     print("finished scraping...")
@@ -174,6 +124,8 @@ def run_process_crawler2(config, redis_connection):
 
 
 def main():
+    args = parse_arguments()
+
     print('-------------------------')
     print("configuring...")
 
@@ -181,11 +133,7 @@ def main():
     redis_connection = get_redis_connection(config)
     initialize_redis_db(redis_connection, config['root_url'])
 
-    run_thread_crawler1(config, redis_connection)
-    #  run_process_crawler1(config, redis_connection)
-
-    #  run_thread_crawler2(config, redis_connection)
-    #  run_process_crawler2(config, redis_connection)
+    crawl(args, config, redis_connection)
 
 
 if __name__ == '__main__':
