@@ -49,7 +49,7 @@ instantiate `MyProcessCrawler` objects. Command line arguments were too
 ambitious for this project :)
 
 Run the code with:
-* ```python3 ./crawler.py```
+* ```python3 ./webcrawler.py```
 
 ##### Inspecting Redis
 Open the Redis command line utility & connect to the database:
