@@ -108,13 +108,13 @@ def crawl(args, config, redis_connection):
     t0 = time.time()
 
     workers = []
-    for worker in range(args.num_workers):
-        w = Crawler(kwargs=kwargs)
-        workers.append(w)
-        w.start()
+    for w in range(args.num_workers):
+        worker = Crawler(kwargs=kwargs)
+        workers.append(worker)
+        worker.start()
 
     for worker in workers:
-        w.join()
+        worker.join()
 
     t1 = time.time()
     print("finished scraping...")
