@@ -104,7 +104,7 @@ def crawl(args, config, redis_connection):
         }
     )
 
-    print("starting to scrape...")
+    print("starting to crawl...")
     t0 = time.time()
 
     workers = []
@@ -117,9 +117,9 @@ def crawl(args, config, redis_connection):
         worker.join()
 
     t1 = time.time()
-    print("finished scraping...")
+    print("finished crawling...")
     elapsed_time = round(t1 - t0, 2)
-    print("elapsed scraping time: {} seconds".format(elapsed_time))
+    print("elapsed crawling time: {} seconds".format(elapsed_time))
     print('-------------------------')
 
 

@@ -3,20 +3,19 @@ This is a programming exercise exploring Redis and concurrency + parallelism
 in Python.
 
 ##### Why?
-I was bored and wanted to learn more about Redis.
-
-
+I wanted to learn more about Redis-- it's an interesting tool with many uses.
 
 ##### How does it work?
+This system creates two types of webcrawlers (described in detail further below)
 
 ### Installation
 
 ##### Requirements
-This project was built with Python 3.5.2 and Redis 4.0.8. Depending on
-your system, you might might need to install a redis server. Local package 
-managers should have a copy of it, but newer versions are available at
-https://redis.io/download. You'll need both Python & Redis, plus a couple
-packages from the Python Package Index.
+This project was built with Python 3.6.5 and Redis 4.0.9 on Ubuntu 18.04.
+Depending on your system, you might might need to install a redis server.
+Local package managers should have a copy of it, but newer versions are
+available at https://redis.io/download. You'll need both Python & Redis,
+plus a couple packages from the Python Package Index.
 
 ##### Setup
 Clone this repository & `cd` into it:
