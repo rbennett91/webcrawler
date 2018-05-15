@@ -35,7 +35,16 @@ def parse_arguments():
         type=int,
         default=1
     )
+    parser.add_argument(
+        "-K",
+        "--no-flush-database",
+        default=False,
+        help="Keep existing data in Redis (ie. don't flush the database)",
+        action="store_true",
+        target="flush_db"
+    )
     args = parser.parse_args()
+    print(args)
 
     if args.crawler_type not in ('crawler1', 'crawler2'):
         raise argparse.ArgumentTypeError("Unknown crawler type. Exiting.")
@@ -60,9 +69,10 @@ def get_redis_connection(config):
     )
 
 
-def initialize_redis_db(redis_connection, root_url):
-    # clear redis database
-    redis_connection.flushdb()
+def initialize_redis_db(redis_connection, root_url, no_flush_db=False):
+    print(no_flush_db)
+    if no_flush_db:
+        redis_connection.flushdb()
 
     # create sorted set and counter for Crawler1 objects
     redis_connection.zadd('c1_sorted_url_set', 0, root_url)
@@ -131,7 +141,11 @@ def main():
 
     config = load_config()
     redis_connection = get_redis_connection(config)
-    initialize_redis_db(redis_connection, config['root_url'])
+    initialize_redis_db(
+        redis_connection,
+        config['root_url'],
+        no_flush_db=args.no_flush_database
+    )
 
     crawl(args, config, redis_connection)
 
