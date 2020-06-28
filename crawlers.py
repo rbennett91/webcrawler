@@ -111,8 +111,7 @@ class Crawler1(BaseCrawler):
                 if zscore is None:
                     self.redis_connection.zadd(
                         'c1_sorted_url_set',
-                        next_position,
-                        url
+                        {url: next_position}
                     )
 
 

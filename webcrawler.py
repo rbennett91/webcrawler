@@ -36,15 +36,13 @@ def parse_arguments():
         default=1
     )
     parser.add_argument(
-        "-K",
-        "--no-flush-database",
+        "-f",
+        "--flush-database",
         default=False,
-        help="Keep existing data in Redis (ie. don't flush the database)",
-        action="store_true",
-        target="flush_db"
+        help="Clears existing data in Redis",
+        action="store_true"
     )
     args = parser.parse_args()
-    print(args)
 
     if args.crawler_type not in ('crawler1', 'crawler2'):
         raise argparse.ArgumentTypeError("Unknown crawler type. Exiting.")
@@ -61,7 +59,7 @@ def load_config():
 
 
 def get_redis_connection(config):
-    return redis.StrictRedis(
+    return redis.Redis(
         host=config['redis']['host'],
         port=config['redis']['port'],
         db=config['redis']['db'],
@@ -69,13 +67,12 @@ def get_redis_connection(config):
     )
 
 
-def initialize_redis_db(redis_connection, root_url, no_flush_db=False):
-    print(no_flush_db)
-    if no_flush_db:
+def initialize_redis_db(redis_connection, root_url, flush_database=False):
+    if flush_database:
         redis_connection.flushdb()
 
     # create sorted set and counter for Crawler1 objects
-    redis_connection.zadd('c1_sorted_url_set', 0, root_url)
+    redis_connection.zadd('c1_sorted_url_set', {root_url: 0})
     redis_connection.set('c1_next_url_position', 0)
 
     # create set and list for Crawler2 objects
@@ -130,7 +127,6 @@ def crawl(args, config, redis_connection):
     print("finished crawling...")
     elapsed_time = round(t1 - t0, 2)
     print("elapsed crawling time: {} seconds".format(elapsed_time))
-    print('-------------------------')
 
 
 def main():
@@ -144,10 +140,11 @@ def main():
     initialize_redis_db(
         redis_connection,
         config['root_url'],
-        no_flush_db=args.no_flush_database
+        flush_database=args.flush_database
     )
 
     crawl(args, config, redis_connection)
+    print('-------------------------')
 
 
 if __name__ == '__main__':
